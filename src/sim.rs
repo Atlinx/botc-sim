@@ -1,15 +1,16 @@
 use std::{
     cell::RefCell,
     collections::{HashMap, VecDeque},
-    vec,
+    fmt::Debug,
 };
 
-use crate::script::Script;
+use downcast_rs::{Downcast, impl_downcast};
 
-pub trait RoleData: std::fmt::Debug {}
+pub trait RoleData: Debug + Downcast {}
+impl_downcast!(RoleData);
 
-pub trait Role: std::fmt::Debug {
-    fn role_name() -> &'static str;
+pub trait Role: Debug + Downcast {
+    fn role_name(&self) -> &'static str;
     fn run_first_night(&self, world: &mut World) {
         self.run_night(world);
     }
@@ -20,13 +21,15 @@ pub trait Role: std::fmt::Debug {
         let _ = world;
     }
 }
+impl_downcast!(Role);
 
-pub trait Token: std::fmt::Debug {}
+pub trait Token: Debug + Downcast {}
+impl_downcast!(Token);
 
 #[derive(Debug)]
 pub struct Player {
     pub name: String,
-    pub role: Box<dyn RoleData>,
+    pub role_data: Box<dyn RoleData>,
     pub tokens: Vec<Box<dyn Token>>,
 }
 
@@ -57,15 +60,45 @@ impl World {
     pub fn new() -> World {
         Self::default()
     }
-    pub fn iter_role_players<T>(&self) -> impl Iterator<Item = Player> {
-        self.players.values_mut().filter(|x| {
+    pub fn iter_role_data_players<T: RoleData>(&self) -> impl Iterator<Item = &RefCell<Player>> {
+        let res = self.players.values().filter(|x| {
             let player = x.borrow();
-            player.role.as_any()
-        })
+            player.role_data.is::<T>()
+        });
+        res
+    }
+    pub fn iter_role_data_players_mut<T: RoleData>(
+        &mut self,
+    ) -> impl Iterator<Item = &mut RefCell<Player>> {
+        let res = self.players.values_mut().filter(|x| {
+            let player = x.borrow();
+            player.role_data.is::<T>()
+        });
+        res
+    }
+    pub fn process_player_event<T: RoleData + Clone>(&mut self) {
+        for event in self.events.iter_mut() {
+            if let Some(event) = event.downcast_mut::<PlayerEvent<T>>()
+                && let Some(player) = self.players.get_mut(&event.player)
+            {
+                player.borrow_mut().role_data = Box::new(event.data.clone());
+            }
+        }
     }
 }
 
-pub trait Event: std::fmt::Debug {}
+pub trait Event: Debug + Downcast {}
+impl_downcast!(Event);
+
+#[derive(Debug)]
+pub struct PlayerEvent<T>
+where
+    T: Debug + 'static,
+{
+    pub player: String,
+    pub data: T,
+}
+impl<T: Debug> Event for PlayerEvent<T> {}
 
 #[derive(Debug)]
 pub struct Step {

@@ -6,23 +6,20 @@ use crate::*;
 #[derive(Debug)]
 pub struct Washerwoman {}
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WasherwomanData {
     know_role: String,
     know_players: [String; 2],
 }
+impl RoleData for WasherwomanData {}
 
 impl Role for Washerwoman {
-    fn role_name() -> &'static str {
+    fn role_name(&self) -> &'static str {
         "washerwoman"
     }
 
     fn run_first_night(&self, world: &mut World) {
-        for player in world.players.values_mut() {
-            let player = player.borrow_mut();
-            let role = player.role as Box<dyn Any>;
-            player.role
-        }
+        world.process_player_event::<WasherwomanData>();
     }
 }
 
@@ -41,6 +38,7 @@ impl script::Script for Script {
         sim.first_night_order = vec![];
         sim.night_order = vec![];
         sim.day_order = vec![];
+        for step in &world.steps {}
         Ok(())
     }
 }

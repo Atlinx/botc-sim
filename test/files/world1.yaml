@@ -14,10 +14,32 @@ players:
     role: imp
   felix:
     role: scarlet_woman
-# days:
-# days:
-#   - players:
-#       alice:
-#         claim: recluse
-#       bob:
-#         claim: drunk
+steps:
+  - step: 1
+    events:
+    - claim:
+        player: alice
+        role: recluse
+    - claim:
+        player: bob
+        role: drunk
+    - vote:
+        victim: alice
+        vote_order:
+          - [+bob, +charlie]
+          - [-bob]
+          - [+alice]
+  - step: 2
+    events:
+    - claim:
+        player: alice
+        role: recluse
+    - claim:
+        player: bob
+        role: drunk
+    - vote:
+        victim: alice
+        vote_order:
+          - [+bob, +charlie]
+          - [-bob]
+          - [+alice]
