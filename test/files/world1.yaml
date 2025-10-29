@@ -1,0 +1,23 @@
+script: trouble_brewing
+players:
+  alice:
+    role: washerwoman
+  bob:
+    role: librarian
+  charlie:
+    role: chef
+  david:
+    role: undertaker
+    tokens: 
+      - drunk
+  eric:
+    role: imp
+  felix:
+    role: scarlet_woman
+# days:
+# days:
+#   - players:
+#       alice:
+#         claim: recluse
+#       bob:
+#         claim: drunk
